@@ -1,31 +1,39 @@
-# Use the official Ubuntu base image
+# Use Ubuntu as the base image
 FROM ubuntu:latest
 
-# Switch to root user
-USER root
+# Set environment variables for non-interactive apt installs
+ENV DB_HOST="aa4e56e04f37142d9904c2b1a78ecde2-488863630.ap-south-1.elb.amazonaws.com" 
+ENV DB_USER="test" 
+ENV DB_PASSWORD="1234" 
+ENV DB_NAME="employees" 
+ENV DB_PORT="5432" 
+ENV ALLOWED_ORIGINS="http://a92c35eee02634c09a81847ce1ff7d69-437757805.ap-south-1.elb.amazonaws.com:3000"
 
-# Update the package list and install dependencies
-RUN apt-get update -y && \
-    apt-get install -y fontconfig openjdk-17-jre wget
+# Set Go environment variables
+ENV GOPATH=/go
+ENV GOROOT=/usr/local/go
+ENV PATH=$PATH:/usr/local/go/bin:$GOPATH/bin
 
-# Download and extract Tomcat
-WORKDIR /opt
-RUN wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.93/bin/apache-tomcat-9.0.93.tar.gz && \
-    tar -xvzf apache-tomcat-9.0.93.tar.gz && \
-    rm apache-tomcat-9.0.93.tar.gz
+# Update and install dependencies
+RUN apt-get update && \
+    apt-get install -y wget git build-essential
 
-# Set the working directory to Tomcat
-WORKDIR /opt/apache-tomcat-9.0.93
+# Install Go
+RUN wget https://golang.org/dl/go1.19.linux-amd64.tar.gz && \
+    tar -C /usr/local -xzf go1.19.linux-amd64.tar.gz && \
+    rm go1.19.linux-amd64.tar.gz
 
-# Download and place the WAR file and MySQL connector
-RUN wget https://s3-us-west-2.amazonaws.com/studentapi-cit/student.war -O webapps/student.war && \
-    wget https://s3-us-west-2.amazonaws.com/studentapi-cit/mysql-connector.jar -O lib/mysql-connector.jar
+# Create the Go working directory
+RUN mkdir -p /home/ubuntu/project
 
-# Copy the context.xml file
-COPY context.xml conf/context.xml
+# Set the working directory
+WORKDIR /home/ubuntu/project
 
-# Expose the Tomcat port
+# Copy the Go application code to the container
+COPY . .
+
+# Expose port 8080 to the outside world
 EXPOSE 8080
 
-# Start Tomcat
-CMD ["bin/catalina.sh", "run"]
+# Command to run the Go application
+CMD ["go", "run", "main.go"]
