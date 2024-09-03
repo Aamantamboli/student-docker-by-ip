@@ -1,6 +1,6 @@
 services:          #default synxtax
   databasefirst:        #naming convention for container
-    build: /opt/Mysql/  #location of the docker file
+    build: /opt/student-docker-by-ip/Mysql/  #location of the docker file
     ports:     #port mapping my container to host port 
       - '3306:3306'  
     container_name: Database  #providing name to container
@@ -8,7 +8,7 @@ services:          #default synxtax
         bridge
 
   backendsecond: 
-    build: /opt/backend/    
+    build: /opt/student-docker-by-ip/backend/    
     ports:
       - '8080:8080'        
     container_name: Backend
@@ -16,7 +16,7 @@ services:          #default synxtax
         bridge
 
   frontendthrid:
-    build:  /opt/frontend/
+    build:  /opt/student-docker-by-ip/frontend/
     ports:
       - '80:80'
     container_name: Frontend
